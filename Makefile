@@ -1,5 +1,5 @@
 FC = gfortran
-FFLAGS = -Wall -Wextra -march=native -O3 -ffast-math
+FFLAGS = -Wall -Wextra -march=native -O3
 LDLFLAGS =
 LIBS = -llapack
 
@@ -11,7 +11,7 @@ OBJS += HydroDynamics.o
 
 all: HydroDynamics
 
-QuantumDynamics: $(OBJS)
+HydroDynamics: $(OBJS)
 	$(LINK) -o $@ $^ $(LIBS)
 %.o: %.f90
 	$(COMPILE) -o $@ -c $<
