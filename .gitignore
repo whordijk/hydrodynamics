@@ -1,0 +1,4 @@
+HydroDynamics
+*.o
+*.mod
+.gitnignore
