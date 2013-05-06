@@ -15,7 +15,7 @@ contains
         integer :: i, j, k, m, z
         real(8) :: a
 
-        m = 5
+        m = 10
         a = 1d0
         z = 1
         do i = 1, m
@@ -28,8 +28,6 @@ contains
                 end do
             end do
         end do
-
-        print *, positions
         velocities = 0
         accelerations = 0
     
