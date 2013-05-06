@@ -9,8 +9,7 @@ LINK = $(FC) $(LDFLAGS)
 OBJS =
 OBJS += CreateWorld.o
 OBJS += FindNeighbors.o
-OBJS += CalcAccelerations.o
-OBJS += UpdatePositions.o
+OBJS += TimeIntegrate.o
 OBJS += OutputData.o
 OBJS += HydroDynamics.o
 

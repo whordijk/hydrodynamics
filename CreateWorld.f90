@@ -7,9 +7,9 @@ module CreateWorld
 
 contains
 
-    subroutine initiate_system(positions, velocities)
+    subroutine initiate_system(positions, velocities, accelerations)
 
-        real(8), intent(inout) :: positions(:, :), velocities(:, :)
+        real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
         integer :: N, i, j, k, m, z
         real(8) :: a
 
@@ -27,7 +27,10 @@ contains
                 end do
             end do
         end do
+
         velocities = 0
+        accelerations = 0
+    
     end subroutine
 
 end module
