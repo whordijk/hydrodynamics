@@ -2,3 +2,4 @@ HydroDynamics
 *.o
 *.mod
 .gitnignore
+test.f90
