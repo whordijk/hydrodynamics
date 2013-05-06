@@ -3,6 +3,7 @@ program HydroDynamics
     use CreateWorld
     use FindNeighbors
     use CalcAccelerations
+    use UpdatePositions
     use OutputData
 
     implicit none
@@ -17,6 +18,7 @@ program HydroDynamics
     do i = 1, T
         call find_neighbors(positions, distances)
         call calc_accelerations(positions, distances, velocities)
+        call update_positions(positions, velocities)
         call output_data(positions)
     end do
 
