@@ -6,7 +6,8 @@ LIBS = -llapack
 COMPILE = $(FC) $(FFLAGS)
 LINK = $(FC) $(LDFLAGS)
 
-OBJS = 
+OBJS =
+OBJS += CreateWorld.o
 OBJS += HydroDynamics.o
 
 all: HydroDynamics
