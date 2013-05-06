@@ -1,8 +1,8 @@
-module UpdatePositions
+module CalcAccelerations
     implicit none
     private
 
-    public calc_accelerations(positions,distances, velocities)
+    public calc_accelerations
 
     contains
 

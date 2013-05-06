@@ -2,7 +2,7 @@ module FindNeighbors
     implicit none
     private
 
-    public find_neighbors()
+    public find_neighbors
 
     contains
 

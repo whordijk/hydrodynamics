@@ -1,4 +1,5 @@
 HydroDynamics
+*.txt
 *.o
 *.mod
 .gitnignore

@@ -2,7 +2,7 @@ module OutputData
     implicit none
     private
 
-    public output_data(positions)
+    public output_data
 
     contains
 
@@ -14,4 +14,7 @@ module OutputData
         write(24,*) positions
 
         close(24)
+    
+    end subroutine
+
 end module
