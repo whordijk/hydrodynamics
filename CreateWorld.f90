@@ -47,7 +47,9 @@ contains
             end do
         end do
 
-        x(3,:) = x(3,:) + 15
+        x(3, :) = x(3, :) + 15
+        x(2, :) = x(2, :) - init_size / 2
+        x(1, :) = x(1, :) - init_size / 2
 
     end subroutine
 
