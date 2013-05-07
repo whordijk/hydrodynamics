@@ -67,7 +67,6 @@ contains
             end do
             delWp(:, i, i) = 0
         end do
-        print *, delWp
 
     end subroutine
 

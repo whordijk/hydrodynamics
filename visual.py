@@ -23,7 +23,7 @@ def simPoints(simData):
 
 
 fName = 'out_positions.txt'
-N = 1000
+N = 125
 p=loadData(fName,N)
 
 fig = plt.figure()
