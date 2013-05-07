@@ -10,7 +10,6 @@ module TimeIntegrate
 
     real(8) :: rho(N), rho_0, pressure(N), W(N, N), delW(3, N, N), del2W(N, N), P(N, N), V(3, N, N)
     real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N)
-    real(8) :: a_gravity(3) = [ 0d0, 0d0, -9.81d0]
 
 contains
 
@@ -18,10 +17,10 @@ contains
 
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
 
-        call update_positions(positions, velocities, accelerations)
-        call update_velocities(positions, velocities, accelerations)
+        positions = positions + velocities * dt + accelerations**2 * dt**2 / 2
+        velocities = velocities + accelerations * dt / 2
         call update_accelerations(positions, velocities, accelerations)
-        call update_velocities(positions, velocities, accelerations)
+        velocities = velocities + accelerations * dt / 2
 
     end subroutine
 
@@ -47,8 +46,11 @@ contains
         call calc_weights(positions(:, :))
         call calc_density()
         call calc_pressure()
-        call calc_viscosity(velocities)
-        call calc_internal()
+        !call calc_viscosity(velocities)
+        !call calc_internal()
+
+        accelerations = a_pressure
+        accelerations(3, :) = accelerations(3, :) - 9.81d0
         
     end subroutine
 
