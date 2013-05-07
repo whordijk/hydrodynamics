@@ -16,7 +16,6 @@ contains
     subroutine update(positions, velocities, accelerations)
 
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
-        integer :: i
 
         positions = positions + velocities * dt + accelerations**2 * dt**2 / 2
         velocities = velocities + accelerations * dt / 2
@@ -127,12 +126,19 @@ contains
     subroutine calc_boundaries(positions)
 
         real(8), intent(in):: positions(:,:)
+        real(8) :: normal(3), d, test
+        integer :: i
+
+        normal = [0, 0, 1]
+        d = 0
 
         a_boundary=0
-        !a_boundary(3,:) = -(12d0/250d0)*(positions(3,:)-125)**11d0
-        a_boundary(3, :) = 1d-4 / positions(3, :)**12
-        !a_boundary(2, :) = 1d-4 * (1/(init_size+positions(2,:))**6) !-1 / (init_size - positions(2, :))**6) !+ 1 / (init_size + positions(2, :))**6)y
-        !a_boundary(1, :) = 1d-4 * (1/(init_size+positions(1,:))**6) !-1 / (init_size - positions(1, :))**6) !+ 1 / (init_size + positions(1, :))**6)
+        do i = 1, N
+            test = sum(positions(:, i) * normal(:)) - d
+            if (test < 0) then
+                a_boundary(3, i) = exp(-test)
+            end if
+        end do
 
     end subroutine
     
