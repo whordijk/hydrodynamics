@@ -9,7 +9,7 @@ module TimeIntegrate
     public update
 
     real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
-    real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N)
+    real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N), a_boundaries(3, N)
 
 contains
 
@@ -120,6 +120,20 @@ contains
     end subroutine
 
     subroutine calc_internal()
+
+    end subroutine
+
+    subroutine calc_boundaries()
+
+
+        a_boundaries = 0
+        do i = 1, N
+            do j = 1, N
+                a_boundaries(:, i) = a_boundaries(i) + sqrt(sum((positions(:, i) - positions(:, j))**2)) 
+            end do
+        end do
+
+        a_boundaries()
 
     end subroutine
     
