@@ -28,6 +28,9 @@ contains
 
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
 
+        positions = positions + 1d0/2*.1*a_pressure
+        print*, a_pressure
+
     end subroutine
 
     subroutine update_velocities(positions, velocities, accelerations)
@@ -88,7 +91,6 @@ contains
         integer :: i, j
 
         pressure = c_s**2 * (rho - rho_0)
-        print *, pressure
         do i = 1, N
             do j = 1, N
                 P(i, j) = -(pressure(i) / rho(i)**2 + pressure(j) / rho(j)**2)
@@ -96,6 +98,7 @@ contains
         end do
         do i = 1, N
             a_pressure(:, i) = sum(P(i, j) * delW(:, i, j))
+            ! sum over j above
         end do
 
     end subroutine

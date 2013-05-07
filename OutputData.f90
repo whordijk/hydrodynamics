@@ -14,7 +14,7 @@ module OutputData
         real(8), intent(in) :: positions(:,:)
         integer :: i
 
-        open(unit = 24, file="out_positions.txt")
+        open(unit = 24, file="out_positions.txt",access="APPEND")
 
         do i = 1, N
             write(24,*) positions(:, i)
