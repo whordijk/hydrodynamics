@@ -15,7 +15,7 @@ contains
         integer :: i, j, k, m, z
         real(8) :: a
 
-        m = 10
+        m = 5
         a = 1d0
         z = 1
         do i = 1, m
