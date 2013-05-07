@@ -8,7 +8,7 @@ module TimeIntegrate
     
     public update
 
-    real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
+    real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N), gam(N)
     real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N), a_boundary(3,N)
 
 contains
@@ -16,11 +16,17 @@ contains
     subroutine update(positions, velocities, accelerations)
 
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
+        integer :: i
 
         positions = positions + velocities * dt + accelerations**2 * dt**2 / 2
-        velocities = velocities + accelerations * dt / 2
+        do i = 1, 3
+            velocities(i, :) = (velocities(i, :) + accelerations(i, :) * dt / 2) / (1 + dt * gam(i) / 2)
+        end do
         call update_accelerations(positions, velocities, accelerations)
-        velocities = velocities + accelerations * dt / 2
+        call calc_gamma()
+        do i = 1, 3
+            velocities(i, :) = (velocities(i, :) + accelerations(i, :) * dt / 2) / (1 + dt * gam(i) / 2)
+        end do
 
     end subroutine
 
@@ -80,7 +86,19 @@ contains
         end do
 
     end subroutine
-    
+
+    subroutine calc_gamma()
+
+        integer :: i, j
+  
+        do i = 1, N
+            do j = 1, N
+                gam(i) = gam(i) + mu * del2Wv(i, j) / (rho(j) * rho(i))
+            end do
+        end do
+
+    end subroutine    
+
     subroutine calc_pressure()
 
         integer :: i, j
@@ -107,7 +125,7 @@ contains
 
         do  i = 1, N
             do j = 1, N
-                V(:, i, j) = mu * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
+                V(:, i, j) = mu * velocities(:, j) / (rho(i) * rho(j))
             end do
         end do
         a_viscosity = 0
