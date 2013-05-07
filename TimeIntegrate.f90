@@ -8,7 +8,7 @@ module TimeIntegrate
     
     public update
 
-    real(8) :: rho(N), rho_0, pressure(N), W(N, N), delW(3, N, N), del2W(N, N), P(N, N), V(3, N, N)
+    real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
     real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N)
 
 contains
@@ -24,21 +24,6 @@ contains
 
     end subroutine
 
-    subroutine update_positions(positions, velocities, accelerations)
-
-        real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
-
-        positions = positions + 1d0/2*.1*a_pressure
-        print*, a_pressure
-
-    end subroutine
-
-    subroutine update_velocities(positions, velocities, accelerations)
-
-        real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
-    
-    end subroutine
-
     subroutine update_accelerations(positions, velocities, accelerations)
 
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
@@ -46,7 +31,7 @@ contains
         call calc_weights(positions(:, :))
         call calc_density()
         call calc_pressure()
-        !call calc_viscosity(velocities)
+        call calc_viscosity(velocities)
         !call calc_internal()
 
         accelerations = a_pressure
@@ -65,21 +50,15 @@ contains
             do j = 1, N
                 q = sqrt(sum((positions(:, i) - positions(:, j))**2))
                 if (0 <= q .and. q <= 1) then
-                    W(i, j) = ((2 - q)**3 - 4 * (1 - q)**3) / (4 * pi)
-                    delW(:, i, j) = 6 * ((2 - q)**2 - 4 * (1 - q)**2) / (4 * pi) * (positions(:, i) - positions(:, j))
-                    del2W(i, j) = 6 * ((2 - q) - 4 * (1 - q)) / (4 * pi) * sum((positions(:, i) - positions(:, j)**2)) &
-                        + 36 * ((2 - q)**2 - 4 * (1 - q)**2) / (4 * pi)
-                else if (1 < q .and. q <= 2) then
-                    W(i, j) = (2 - q)**3 /  (4 * pi)
-                    delW(:, i, j) = 6 * (2 - q)**2 / (4 * pi) * (positions(:, i) - positions(:, j))
-                    del2W(i, j) = 1
+                    Wd(i, j) = 315 * (1 - q**2)**3 / (64 * pi)
+                    delWp(:, i, j) = 45 * (1 - q)**3 / pi * (positions(:, i) - positions(:, j)) / q
+                    del2Wv(i, j) = 45 * (1 - q) / pi
                 else
-                    W(i, j) = 0
-                    delW(:, i, j) = 0
-                    del2W(i, j) = 0
+                    Wd(i, j) = 0
+                    delWp(:, i, j) = 0
+                    del2Wv(i, j) = 0
                 end if
             end do
-
         end do
 
     end subroutine
@@ -89,7 +68,7 @@ contains
         integer :: i
 
         do i = 1, N
-            rho(i) = sum(W(i, :))
+            rho(i) = sum(Wd(i, :))
         end do
         rho_0 = sum(rho) / size(rho)
 
@@ -107,12 +86,8 @@ contains
         end do
         a_pressure = 0
         do i = 1, N
-<<<<<<< HEAD
-            a_pressure(:, i) = sum(P(i, j) * delW(:, i, j))
-            ! sum over j above
-=======
             do j = 1, N
-                a_pressure(:, i) = a_pressure(:, i) + P(i, j) * delW(:, i, j)
+                a_pressure(:, i) = a_pressure(:, i) + P(i, j) * delWp(:, i, j)
             end do
         end do
 
@@ -131,9 +106,8 @@ contains
         a_viscosity = 0
         do i = 1, N
             do j = 1, N
-                a_viscosity(:, i) = a_viscosity(:, i) + V(:, i, j) * del2W(i, j)
+                a_viscosity(:, i) = a_viscosity(:, i) + V(:, i, j) * del2Wv(i, j)
             end do
->>>>>>> upstream/master
         end do
 
     end subroutine
