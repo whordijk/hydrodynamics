@@ -9,14 +9,17 @@ module TimeIntegrate
     public update
 
     real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
+<<<<<<< HEAD
     real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N), a_boundary(3,N)
+=======
+    real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N), a_boundaries(3, N)
+>>>>>>> upstream/master
 
 contains
 
     subroutine update(positions, velocities, accelerations)
 
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
-        integer :: i
 
         positions = positions + velocities * dt + accelerations**2 * dt**2 / 2
         velocities = velocities + accelerations * dt / 2
@@ -79,6 +82,7 @@ contains
         do i = 1, N
             rho(i) = sum(Wd(:, i))
         end do
+        rho_0 = set_density! sum(rho) / size(rho)
 
     end subroutine
     
@@ -86,7 +90,7 @@ contains
 
         integer :: i, j
 
-        pressure = c_s**2 * (rho - set_density)
+        pressure = c_s**2 * (rho - rho_0)
         do i = 1, N
             do j = 1, N
                 P(i, j) = -(pressure(i) / rho(i)**2 + pressure(j) / rho(j)**2)
@@ -124,15 +128,26 @@ contains
 
     end subroutine
 
+<<<<<<< HEAD
     subroutine calc_boundaries(positions)
-
         real(8), intent(in):: positions(:,:)
 
         a_boundary=0
-        !a_boundary(3,:) = -(12d0/250d0)*(positions(3,:)-125)**11d0
-        a_boundary(3, :) = 1d-4 / positions(3, :)**12
-        !a_boundary(2, :) = 1d-4 * (1/(init_size+positions(2,:))**6) !-1 / (init_size - positions(2, :))**6) !+ 1 / (init_size + positions(2, :))**6)y
-        !a_boundary(1, :) = 1d-4 * (1/(init_size+positions(1,:))**6) !-1 / (init_size - positions(1, :))**6) !+ 1 / (init_size + positions(1, :))**6)
+        a_boundary(3,:) = 1d-4/positions(3,:)**6
+        
+=======
+    subroutine calc_boundaries()
+
+
+        a_boundaries = 0
+        do i = 1, N
+            do j = 1, N
+                a_boundaries(:, i) = a_boundaries(i) + sqrt(sum((positions(:, i) - positions(:, j))**2)) 
+            end do
+        end do
+
+        a_boundaries()
+>>>>>>> upstream/master
 
     end subroutine
     
