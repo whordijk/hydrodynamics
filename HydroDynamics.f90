@@ -9,7 +9,6 @@ program HydroDynamics
 
     integer, parameter  :: T = 1
     real(8) :: positions(3, N), velocities(3, N), accelerations(3, N)
-    real(8) :: distances(3, N**2)
     integer :: i
 
     call initiate_system(positions, velocities, accelerations)

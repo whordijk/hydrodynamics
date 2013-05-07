@@ -8,8 +8,9 @@ module TimeIntegrate
     
     public update
 
-    real(8) :: rho(N), rho_0, pressure(N), W(N, N), delW(3, N, N), P(N, N)
-    real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N), a_gravity(3, N)
+    real(8) :: rho(N), rho_0, pressure(N), W(N, N), delW(3, N, N), del2W(N, N), P(N, N), V(3, N, N)
+    real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N)
+    real(8) :: a_gravity(3) = [ 0d0, 0d0, -9.81d0]
 
 contains
 
@@ -43,6 +44,8 @@ contains
         call calc_weights(positions(:, :))
         call calc_density()
         call calc_pressure()
+        call calc_viscosity(velocities)
+        call calc_internal()
         
     end subroutine
 
@@ -59,12 +62,16 @@ contains
                 if (0 <= q .and. q <= 1) then
                     W(i, j) = ((2 - q)**3 - 4 * (1 - q)**3) / (4 * pi)
                     delW(:, i, j) = 6 * ((2 - q)**2 - 4 * (1 - q)**2) / (4 * pi) * (positions(:, i) - positions(:, j))
+                    del2W(i, j) = 6 * ((2 - q) - 4 * (1 - q)) / (4 * pi) * sum((positions(:, i) - positions(:, j)**2)) &
+                        + 36 * ((2 - q)**2 - 4 * (1 - q)**2) / (4 * pi)
                 else if (1 < q .and. q <= 2) then
                     W(i, j) = (2 - q)**3 /  (4 * pi)
                     delW(:, i, j) = 6 * (2 - q)**2 / (4 * pi) * (positions(:, i) - positions(:, j))
+                    del2W(i, j) = 1
                 else
                     W(i, j) = 0
                     delW(:, i, j) = 0
+                    del2W(i, j) = 0
                 end if
             end do
 
@@ -94,10 +101,36 @@ contains
                 P(i, j) = -(pressure(i) / rho(i)**2 + pressure(j) / rho(j)**2)
             end do
         end do
+        a_pressure = 0
         do i = 1, N
-            a_pressure(:, i) = sum(P(i, j) * delW(:, i, j))
+            do j = 1, N
+                a_pressure(:, i) = a_pressure(:, i) + P(i, j) * delW(:, i, j)
+            end do
         end do
 
     end subroutine
 
+    subroutine calc_viscosity(velocities)
+
+        real(8), intent(in) :: velocities(:, :)
+        integer :: i, j
+
+        do  i = 1, N
+            do j = 1, N
+                V(:, i, j) = mu * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
+            end do
+        end do
+        a_viscosity = 0
+        do i = 1, N
+            do j = 1, N
+                a_viscosity(:, i) = a_viscosity(:, i) + V(:, i, j) * del2W(i, j)
+            end do
+        end do
+
+    end subroutine
+
+    subroutine calc_internal()
+
+    end subroutine
+    
 end module
