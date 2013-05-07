@@ -47,19 +47,27 @@ contains
         integer :: i, j
 
         do i = 1, N
-            do j = 1, N
+            do j = i, N
                 q = sqrt(sum((positions(:, i) - positions(:, j))**2))
                 if (0 <= q .and. q <= 1) then
                     Wd(i, j) = 315 * (1 - q**2)**3 / (64 * pi)
+                    Wd(j, i) = Wd(i, j)
                     delWp(:, i, j) = 45 * (1 - q)**3 / pi * (positions(:, i) - positions(:, j)) / q
+                    delWp(:, j, i) = -delWp(:, i, j)
                     del2Wv(i, j) = 45 * (1 - q) / pi
+                    del2Wv(j, i) = del2Wv(i, j)
                 else
                     Wd(i, j) = 0
+                    Wd(j, i) = 0
                     delWp(:, i, j) = 0
+                    delWp(:, j, i) = 0
                     del2Wv(i, j) = 0
+                    del2Wv(j, i) = 0
                 end if
             end do
+            delWp(:, i, i) = 0
         end do
+        print *, delWp
 
     end subroutine
 
