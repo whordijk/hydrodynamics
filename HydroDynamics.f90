@@ -7,7 +7,7 @@ program HydroDynamics
 
     implicit none
 
-    integer, parameter  :: T = 1
+    integer, parameter  :: T = 1000
     real(8) :: positions(3, N), velocities(3, N), accelerations(3, N)
     integer :: i
 
