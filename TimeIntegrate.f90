@@ -35,7 +35,7 @@ contains
         !call calc_internal()
 
         accelerations = a_pressure
-        accelerations(3, :) = accelerations(3, :) - 9.81d0
+        accelerations(3, :) = accelerations(3, :) !- 9.81d0
         
     end subroutine
 
@@ -52,7 +52,7 @@ contains
                 if (0 <= q .and. q <= h) then
                     Wd(i, j) = 315 * (h**2 - q**2)**3 / (64 * pi * h**9)
                     Wd(j, i) = Wd(i, j)
-                    delWp(:, i, j) = 45 * (h - q)**3 / (pi * h**6) * (positions(:, i) - positions(:, j)) / q
+                    delWp(:, i, j) = -45 * (h - q)**3 / (pi * h**6) * (positions(:, i) - positions(:, j)) / q
                     delWp(:, j, i) = -delWp(:, i, j)
                     del2Wv(i, j) = 45 * (h - q) / (pi * h**6)
                     del2Wv(j, i) = del2Wv(i, j)

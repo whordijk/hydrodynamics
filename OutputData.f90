@@ -11,7 +11,8 @@ module OutputData
 
     contains
     subroutine set_output()
-        open(unit =24,file=filename)
+        open(unit =24,file=filename,access="replace")
+            write(24,*) "# ", N
         close(24)
     end subroutine
 
