@@ -5,6 +5,8 @@ import matplotlib.animation as animation
 
 def loadData(fName,N):
     f = open(fName)
+    N=f.readline()
+    N = int(N.split()[1])
 
     positions = np.loadtxt(f,unpack=True)
     positions = np.reshape(positions,(3,N,-1),order='F')
@@ -29,6 +31,9 @@ p=loadData(fName,N)
 fig = plt.figure()
 ax = fig.add_subplot(111,projection='3d')
 line, = ax.plot(p[0,:,0],p[1,:,0],p[2,:,0],"o")
+ax.set_xlim3d((-15,15))
+ax.set_ylim3d((-15,15))
+ax.set_zlim3d((-5,25))
 
 ani = animation.FuncAnimation(fig,simPoints, simData, blit=False,interval=10,
         repeat=True)

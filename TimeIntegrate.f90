@@ -9,7 +9,7 @@ module TimeIntegrate
     public update
 
     real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
-    real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N)
+    real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N), a_boundary(3,N)
 
 contains
 
@@ -32,10 +32,11 @@ contains
         call calc_density()
         call calc_pressure()
         call calc_viscosity(velocities)
+        call calc_boundaries(positions)
         !call calc_internal()
 
-        accelerations = a_pressure
-        accelerations(3, :) = accelerations(3, :) !- 9.81d0
+        accelerations = a_pressure + a_boundary + a_viscosity
+        accelerations(3, :) = accelerations(3, :) - 9.81d0
         
     end subroutine
 
@@ -75,9 +76,9 @@ contains
         integer :: i
 
         do i = 1, N
-            rho(i) = sum(Wd(i, :))
+            rho(i) = sum(Wd(:, i))
         end do
-        rho_0 = sum(rho) / size(rho)
+        rho_0 = set_density! sum(rho) / size(rho)
 
     end subroutine
     
@@ -120,6 +121,15 @@ contains
     end subroutine
 
     subroutine calc_internal()
+
+    end subroutine
+
+    subroutine calc_boundaries(positions)
+        real(8), intent(in):: positions(:,:)
+
+        a_boundary=0
+        a_boundary(3,:) = 1d-4/positions(3,:)**6
+        
 
     end subroutine
     
