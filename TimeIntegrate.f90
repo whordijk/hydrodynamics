@@ -129,8 +129,8 @@ contains
 
         a_boundary=0
         a_boundary(3, :) = 1d-4 / positions(3, :)**6
-        a_boundary(2, :) = 1d-4 * (1 / (init_size - positions(2, :)**6) + 1 / (-init_size - positions(2, :)))
-        a_boundary(1, :) = 1d-4 * (1 / (init_size - positions(1, :)**6) + 1 / (-init_size - positions(1, :)))
+        a_boundary(2, :) = 1d-4 * (1 / (init_size - positions(2, :))**6 + 1 / (-init_size - positions(2, :))**6)
+        a_boundary(1, :) = 1d-4 * (1 / (init_size - positions(1, :))**6 + 1 / (-init_size - positions(1, :))**6)
 
     end subroutine
     
