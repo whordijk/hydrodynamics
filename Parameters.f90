@@ -6,6 +6,7 @@ module Parameters
     integer, parameter :: T = 8000
     real(8), parameter :: total_mass = float(N)
     real(8), parameter :: set_density = 1
+    real(8), parameter :: init_size = (total_mass / set_density)**(1d0 / 3)
     real(8), parameter :: Temperature = .1
     real(8), parameter :: dt = 1d-3
     real(8), parameter :: c_s = 10, mu = 10

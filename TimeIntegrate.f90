@@ -78,7 +78,6 @@ contains
         do i = 1, N
             rho(i) = sum(Wd(:, i))
         end do
-        rho_0 = set_density! sum(rho) / size(rho)
 
     end subroutine
     
@@ -86,7 +85,7 @@ contains
 
         integer :: i, j
 
-        pressure = c_s**2 * (rho - rho_0)
+        pressure = c_s**2 * (rho - set_density)
         do i = 1, N
             do j = 1, N
                 P(i, j) = -(pressure(i) / rho(i)**2 + pressure(j) / rho(j)**2)
@@ -125,11 +124,13 @@ contains
     end subroutine
 
     subroutine calc_boundaries(positions)
+
         real(8), intent(in):: positions(:,:)
 
         a_boundary=0
-        a_boundary(3,:) = 1d-4/positions(3,:)**6
-        
+        a_boundary(3, :) = 1d-4 / positions(3, :)**6
+        a_boundary(2, :) = 1d-4 * (1 / (init_size - positions(2, :)**6) + 1 / (-init_size - positions(2, :)))
+        a_boundary(1, :) = 1d-4 * (1 / (init_size - positions(1, :)**6) + 1 / (-init_size - positions(1, :)))
 
     end subroutine
     
