@@ -1,27 +1,35 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.animation as animation
 
-def loadData(fName):
+def loadData(fName,N):
     f = open(fName)
-    lines = f.readlines()
-    
-    positions = np.zeros((3,len(lines)))
-    for i,line in enumerate(lines):
-        p = [float(e) for e in line.split()]
-        positions[:,i] = p
 
+    positions = np.loadtxt(f,unpack=True)
+    positions = np.reshape(positions,(3,N,-1),order='F')
+    
     return positions
 
-def visualize(positions):
-    fig = plt.figure()
-    ax = fig.add_subplot(111,projection='3d')
-    ax.scatter(positions[0],positions[1],positions[2])
+def simData():
+    for t in range(0,len(p[0,0,:])):
+        yield p[:,:,t]
 
-    plt.show()
-
+def simPoints(simData):
+    positions = simData
+    line.set_data(positions[0,:],positions[1,:])
+    line.set_3d_properties(positions[2,:])
+    return line
 
 
 fName = 'out_positions.txt'
-p=loadData(fName)
-visualize(p)
+N = 512
+p=loadData(fName,N)
+
+fig = plt.figure()
+ax = fig.add_subplot(111,projection='3d')
+line, = ax.plot(p[0,:,0],p[1,:,0],p[2,:,0],"o")
+
+ani = animation.FuncAnimation(fig,simPoints, simData, blit=False,interval=10,
+        repeat=True)
+plt.show()
