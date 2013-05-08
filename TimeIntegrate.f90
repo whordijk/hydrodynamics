@@ -113,6 +113,13 @@ contains
             V(:, i, j) = mu * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
             V(:, j, i) = mu * (velocities(:, i) - velocities(:, j)) / (rho(j) * rho(i))
         end do
+
+        do k=1,3
+            do i = 1,N
+                a(k,i) = a(k,i) + sum(V(k,i,:)*del2Wv(i,:))
+            end do
+        end do
+
         do i = 1, N
             do j = 1, N
                 a(:, i) = a(:, i) + V(:, i, j) * del2Wv(i, j)
