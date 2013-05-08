@@ -14,7 +14,8 @@ contains
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
 
         call initiate_positions(positions)
-        call initiate_velocities(velocities)
+        !call initiate_velocities(velocities)
+        velocities = 0
         accelerations = 0
     
     end subroutine
