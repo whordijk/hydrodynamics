@@ -57,7 +57,7 @@ contains
                 if (0 <= q .and. q <= h) then
                     Wd(i, j) = 315 * (h**2 - q**2)**3 / (64 * pi * h**9)
                     Wd(j, i) = Wd(i, j)
-                    delWp(:, i, j) = -45 * (h - q)**3 / (pi * h**6) * (positions(:, i) - positions(:, j)) / q
+                    delWp(:, i, j) = -135 * (h - q)**2 / (pi * h**6) * (positions(:, i) - positions(:, j)) / q
                     delWp(:, j, i) = -delWp(:, i, j)
                     del2Wv(i, j) = 45 * (h - q) / (pi * h**6)
                     del2Wv(j, i) = del2Wv(i, j)
@@ -91,6 +91,9 @@ contains
         do pair = 1, pairs
             i = calc(1,pair)
             j = calc(2,pair)
+            if (i==j) then 
+                cycle
+            end if
             P(i, j) = -(pressure(i) / rho(i)**2 + pressure(j) / rho(j)**2)
             P(j, i) = -(pressure(j) / rho(j)**2 + pressure(i) / rho(i)**2)
             a(:, i) = a(:, i) + P(i, j) * delWp(:, i, j)
@@ -124,20 +127,32 @@ contains
 
     subroutine calc_boundaries(positions,a)
         real(8) :: a(:,:)
-        real(8) :: normal(3), d, test
-        integer :: i
+        real(8) :: normal(3,5), normal_k(3), d(5), d_k
+        integer :: i,k
         real(8), intent(in):: positions(:,:)
+        real(8) :: proj(3,N), test(N)
 
+        normal(:,1) = [1,0,0]
+        normal(:,2) = [-1,0,0]
+        normal(:,3) = [0,1,0]
+        normal(:,4) = [0,-1,0]
+        normal(:,5) = [0,0,1]
+        d=[init_size/2,init_size/2,init_size/2,init_size/2,0d0]
 
-       normal = [0,0,1]
-       d=0
-
-       do i=1,N
-           test = sum(positions(:,i)*normal(:))-d
-           if (test<0) then
-               a(3,i) = a(3,i)+ exp(-test)
-           end if
-       end do
+        
+        do k =1,5
+            normal_k = normal(:,k)
+            d_k = d(k)
+            proj = 0
+            do i =1,3
+                proj(i,:) = proj(i,:) + positions(i,:)*normal_k(i)
+            end do
+            test = sum(proj,dim=1)+d_k
+            test = (test - abs(test)) / 2
+            do i=1,3
+                a(i,:) = a(i,:) + exp(-test)*normal(i,k)
+            end do
+        end do
 
     end subroutine
     
