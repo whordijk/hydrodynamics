@@ -34,7 +34,7 @@ contains
         rho = sum(Wd, dim=2)  !Calculate density
         call calc_pressure(accelerations)
         call calc_viscosity(velocities,accelerations)
-        !call calc_surface(accelerations)
+        call calc_surface(accelerations)
         call calc_boundaries(positions,velocities, accelerations)
 
         accelerations(3, :) = accelerations(3, :) - 9.81d0
@@ -116,9 +116,19 @@ contains
         do  pair = 1, pairs
             i = calc(1,pair)
             j = calc(2,pair)
-            V= mu * mass*(velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
+<<<<<<< HEAD
+            V= mu * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
             a(:, i) = a(:,i) + V*del2WV(i,j)
             a(:, j) = a(:,j) - V*del2WV(j,i)
+=======
+            V(:, i, j) = mu * mass * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
+            V(:, j, i) = mu * mass * (velocities(:, i) - velocities(:, j)) / (rho(j) * rho(i))
+        end do
+        do i = 1, N
+            do j = 1, N
+                a(:, i) = a(:, i) + V(:, i, j) * del2Wv(i, j)
+            end do
+>>>>>>> upstream/master
         end do
 
     end subroutine
@@ -155,8 +165,7 @@ contains
         normal(:,3) = [0, 1, 0]
         normal(:,4) = [0, -1, 0]
         normal(:,5) = [0, 0, 1]
-        !d = [wall_body, wall_body, wall_body, wall_body, 0d0]
-        d = 10*[init_size/2,init_size/2,init_size/2,init_size/2,0d0]
+        d = [init_size/2, init_size/2, init_size/2, init_size/2, 0d0]
 
         
         do k =1,5

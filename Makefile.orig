@@ -1,5 +1,9 @@
 FC = gfortran
+<<<<<<< HEAD
 FFLAGS = -Wall -Wextra -O3 
+=======
+FFLAGS = -Wall -Wextra -fbounds-check -O3
+>>>>>>> upstream/master
 LDLFLAGS =
 LIBS = -llapack
 
@@ -9,6 +13,7 @@ LINK = $(FC) $(LDFLAGS)
 OBJS =
 OBJS += Parameters.o
 OBJS += CreateWorld.o
+OBJS += FindNeighbors.o
 OBJS += TimeIntegrate.o
 OBJS += OutputData.o
 OBJS += HydroDynamics.o
