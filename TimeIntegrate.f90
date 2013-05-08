@@ -8,7 +8,7 @@ module TimeIntegrate
     
     public update
 
-    real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
+    real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N)
     integer :: calc(2,N**2),pairs
 
 contains
@@ -31,7 +31,7 @@ contains
         accelerations = 0
     
         call calc_weights(positions(:, :))
-        call calc_density()
+        rho = sum(Wd, dim=2)  !Calculate density
         call calc_pressure(acceleratioins)
         call calc_viscosity(velocities,accelerations)
         call calc_surface()
@@ -49,13 +49,14 @@ contains
         real(8) :: q 
         integer :: i, j
 
-        pairs=1
+        pairs=0
         calc = 0
 
         do i = 1, N
             do j = i, N
                 q = sqrt(sum((positions(:, i) - positions(:, j))**2))
                 if (0 <= q .and. q <= h) then
+                    pairs = pairs+1
                     Wd(i, j) = 315 * (h**2 - q**2)**3 / (64 * pi * h**9)
                     Wd(j, i) = Wd(i, j)
                     delWp(:, i, j) = -135 * (h - q)**2 / (pi * h**6) * (positions(:, i) - positions(:, j)) / q
@@ -65,7 +66,6 @@ contains
 
                     calc(1,pairs) = i
                     calc(2,pairs) = j
-                    pairs = pairs+1
                 else
                     Wd(i, j) = 0
                     Wd(j, i) = 0
@@ -81,7 +81,6 @@ contains
     end subroutine
 
     subroutine calc_density()
-        rho = sum(Wd, dim=2)
     end subroutine
     
     subroutine calc_pressure(a)
@@ -106,18 +105,16 @@ contains
     subroutine calc_viscosity(velocities,a)
         real(8) :: a(:,:)
         real(8), intent(in) :: velocities(:, :)
-        integer :: i, j, pair
+        integer :: i, j,k, pair
+        real(8) :: V(3)!, N, N)
 
+        V=0
         do  pair = 1, pairs
             i = calc(1,pair)
             j = calc(2,pair)
-            V(:, i, j) = mu * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
-            V(:, j, i) = mu * (velocities(:, i) - velocities(:, j)) / (rho(j) * rho(i))
-        end do
-        do i = 1, N
-            do j = 1, N
-                a(:, i) = a(:, i) + V(:, i, j) * del2Wv(i, j)
-            end do
+            V= mu * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
+            a(:, i) = a(:,i) + V*del2WV(i,j)
+            a(:, j) = a(:,j) - V*del2WV(j,i)
         end do
 
     end subroutine
