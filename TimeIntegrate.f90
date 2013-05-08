@@ -94,9 +94,10 @@ contains
         gam = 0 
         do i = 1, N
             do j = 1, N
-                gam(i) = gam(i) + mu * del2Wv(i, j) / (rho(j) * rho(i))
+                gam(i) = gam(i) + del2Wv(i, j) / rho(j)
             end do
         end do
+        gam = mu * gam / rho
 
     end subroutine    
 
@@ -127,8 +128,11 @@ contains
         a_viscosity = 0
         do i = 1, N
             do j = 1, N
-                a_viscosity(:, i) = a_viscosity(:, i) + velocities(:, j) * del2Wv(i, j) / (rho(i) * rho(j))
+                a_viscosity(:, i) = a_viscosity(:, i) + velocities(:, j) * del2Wv(i, j) / rho(j)
             end do
+        end do
+        do i = 1, 3
+            a_viscosity(i, :) = mu * a_viscosity(i, :) / rho
         end do
 
     end subroutine
