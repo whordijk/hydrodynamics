@@ -8,40 +8,35 @@ module TimeIntegrate
     
     public update
 
-    real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N), gam(N)
-    real(8) :: a_pressure(3, N), a_viscosity(3, N), a_internal(3, N), a_boundary(3,N)
+    real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
+    integer :: calc(2,N**2),pairs
 
 contains
 
     subroutine update(positions, velocities, accelerations)
 
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
-        integer :: i
 
-        do i = 1, 3
-            velocities (i, :) = (1 - dt * gam / 2) * velocities(i, 3) + dt * accelerations(i, :)
-            positions(i, :) = positions(i, :) + velocities(i, :) * dt
-        end do
+        velocities = velocities + accelerations * dt / 2
+        positions = positions + velocities * dt !+ accelerations**2 * dt**2 / 2
         call update_accelerations(positions, velocities, accelerations)
-        call calc_gamma()
-        do i = 1, 3
-            velocities(i, :) = (velocities(i, :) + dt * accelerations(i, :) / 2) / (1 + h * gam / 2)
-        end do
+        velocities = velocities + accelerations * dt / 2
 
     end subroutine
 
     subroutine update_accelerations(positions, velocities, accelerations)
 
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
+
+        accelerations = 0
     
         call calc_weights(positions(:, :))
         call calc_density()
-        call calc_pressure()
-        call calc_viscosity(velocities)
-        call calc_boundaries(positions)
+        call calc_viscosity(velocities,accelerations)
+        call calc_pressure(accelerations)
+        call calc_boundaries(positions,accelerations)
         !call calc_internal()
 
-        accelerations = a_pressure + a_boundary + a_viscosity
         accelerations(3, :) = accelerations(3, :) - 9.81d0
         
     end subroutine
@@ -53,6 +48,9 @@ contains
         real(8) :: q 
         integer :: i, j
 
+        pairs=1
+        calc = 0
+
         do i = 1, N
             do j = i, N
                 q = sqrt(sum((positions(:, i) - positions(:, j))**2))
@@ -63,6 +61,10 @@ contains
                     delWp(:, j, i) = -delWp(:, i, j)
                     del2Wv(i, j) = 45 * (h - q) / (pi * h**6)
                     del2Wv(j, i) = del2Wv(i, j)
+
+                    calc(1,pairs) = i
+                    calc(2,pairs) = j
+                    pairs = pairs+1
                 else
                     Wd(i, j) = 0
                     Wd(j, i) = 0
@@ -78,61 +80,40 @@ contains
     end subroutine
 
     subroutine calc_density()
-
-        integer :: i
-
-        do i = 1, N
-            rho(i) = sum(Wd(:, i))
-        end do
-
+        rho = sum(Wd, dim=2)
     end subroutine
-
-    subroutine calc_gamma()
-
-        integer :: i, j
- 
-        gam = 0 
-        do i = 1, N
-            do j = 1, N
-                gam(i) = gam(i) + del2Wv(i, j) / rho(j)
-            end do
-        end do
-        gam = mu * gam / rho
-
-    end subroutine    
-
-    subroutine calc_pressure()
-
-        integer :: i, j
+    
+    subroutine calc_pressure(a)
+        real(8) :: a(:,:)
+        integer :: i, j, pair
 
         pressure = c_s**2 * (rho - set_density)
-        do i = 1, N
-            do j = 1, N
-                P(i, j) = -(pressure(i) / rho(i)**2 + pressure(j) / rho(j)**2)
-            end do
-        end do
-        a_pressure = 0
-        do i = 1, N
-            do j = 1, N
-                a_pressure(:, i) = a_pressure(:, i) + P(i, j) * delWp(:, i, j)
-            end do
+        do pair = 1, pairs
+            i = calc(1,pair)
+            j = calc(2,pair)
+            P(i, j) = -(pressure(i) / rho(i)**2 + pressure(j) / rho(j)**2)
+            P(j, i) = -(pressure(j) / rho(j)**2 + pressure(i) / rho(i)**2)
+            a(:, i) = a(:, i) + P(i, j) * delWp(:, i, j)
+            a(:, j) = a(:, j) + P(j, i) * delWp(:, j, i)
         end do
 
     end subroutine
 
-    subroutine calc_viscosity(velocities)
-
+    subroutine calc_viscosity(velocities,a)
+        real(8) :: a(:,:)
         real(8), intent(in) :: velocities(:, :)
-        integer :: i, j
+        integer :: i, j, pair
 
-        a_viscosity = 0
+        do  pair = 1, pairs
+            i = calc(1,pair)
+            j = calc(2,pair)
+            V(:, i, j) = mu * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
+            V(:, j, i) = mu * (velocities(:, i) - velocities(:, j)) / (rho(j) * rho(i))
+        end do
         do i = 1, N
             do j = 1, N
-                a_viscosity(:, i) = a_viscosity(:, i) + velocities(:, j) * del2Wv(i, j) / rho(j)
+                a(:, i) = a(:, i) + V(:, i, j) * del2Wv(i, j)
             end do
-        end do
-        do i = 1, 3
-            a_viscosity(i, :) = mu * a_viscosity(i, :) / rho
         end do
 
     end subroutine
@@ -141,23 +122,23 @@ contains
 
     end subroutine
 
-    subroutine calc_boundaries(positions)
-
-        real(8), intent(in):: positions(:,:)
+    subroutine calc_boundaries(positions,a)
+        real(8) :: a(:,:)
         real(8) :: normal(3), d, test
         integer :: i
+        real(8), intent(in):: positions(:,:)
 
-        normal = [0, 0, 1]
-        d = 0
 
-        a_boundary=0
-        do i = 1, N
-            test = sum(positions(:, i) * normal(:)) - d
-            if (test < 0) then
-                a_boundary(3, i) = exp(-test)
-            end if
-        end do
+       normal = [0,0,1]
+       d=0
+
+       do i=1,N
+           test = sum(positions(:,i)*normal(:))-d
+           if (test<0) then
+               a(3,i) = a(3,i)+ exp(-test)
+           end if
+       end do
 
     end subroutine
-
+    
 end module
