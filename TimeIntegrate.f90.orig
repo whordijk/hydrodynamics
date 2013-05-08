@@ -8,8 +8,12 @@ module TimeIntegrate
     
     public update
 
+<<<<<<< HEAD
+    real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N)
+=======
     real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWd(3, N, N), del2Wd(N, N)
     real(8) :: delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
+>>>>>>> upstream/master
     integer :: calc(2,N**2),pairs
 
 contains
@@ -32,7 +36,11 @@ contains
         accelerations = 0
     
         call calc_weights(positions(:, :))
+<<<<<<< HEAD
         rho = sum(Wd, dim=2)  !Calculate density
+=======
+        call calc_density()
+>>>>>>> upstream/master
         call calc_pressure(accelerations)
         call calc_viscosity(velocities,accelerations)
         call calc_surface(accelerations)
@@ -49,13 +57,18 @@ contains
         real(8) :: q 
         integer :: i, j
 
+<<<<<<< HEAD
+        pairs=0
+=======
         pairs= 0 
+>>>>>>> upstream/master
         calc = 0
 
         do i = 1, N
             do j = i, N
                 q = sqrt(sum((positions(:, i) - positions(:, j))**2))
                 if (0 <= q .and. q <= h) then
+                    pairs = pairs+1
                     Wd(i, j) = 315 * (h**2 - q**2)**3 / (64 * pi * h**9)
                     Wd(j, i) = Wd(i, j)
                     delWd(:, i, j) = -945 / (32 * pi * h**9) * (h**2 - q**2)**2 * (positions(:, i) - positions(:, j))
