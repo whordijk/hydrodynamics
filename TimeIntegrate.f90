@@ -16,10 +16,17 @@ contains
     subroutine update(positions, velocities, accelerations)
 
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
+        integer :: i
 
-        positions = positions + velocities * dt + accelerations**2 * dt**2 / 2
+        do i = 1, 3
+            velocities (i, :) = (1 - dt * gam / 2) * velocities(i, 3) + dt * accelerations(i, :)
+            positions(i, :) = positions(i, :) + velocities(i, :) * dt + accelerations(i, :)**2 * dt**2 / 2
+        end do
         call update_accelerations(positions, velocities, accelerations)
-        ! call calc_gamma()
+        call calc_gamma()
+        do i = 1, 3
+            velocities(i, :) = (velocities(i, :) + dt * accelerations(i, :) / 2) / (1 + h * gam / 2)
+        end do
 
     end subroutine
 
@@ -117,15 +124,10 @@ contains
         real(8), intent(in) :: velocities(:, :)
         integer :: i, j
 
-        do  i = 1, N
-            do j = 1, N
-                V(:, i, j) = mu * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
-            end do
-        end do
         a_viscosity = 0
         do i = 1, N
             do j = 1, N
-                a_viscosity(:, i) = a_viscosity(:, i) + V(:, i, j) * del2Wv(i, j)
+                a_viscosity(:, i) = a_viscosity(:, i) + velocities(:, j) * del2Wv(i, j) / (rho(i) * rho(j))
             end do
         end do
 
@@ -153,5 +155,5 @@ contains
         end do
 
     end subroutine
-    
+
 end module
