@@ -32,9 +32,10 @@ contains
     
         call calc_weights(positions(:, :))
         call calc_density()
+        call calc_pressure(acceleratioins)
         call calc_viscosity(velocities,accelerations)
-        call calc_pressure(accelerations)
-        call calc_boundaries(positions,accelerations)
+        call calc_surface()
+        call calc_boundaries(positions,velocities, accelerations)
         !call calc_internal()
 
         accelerations(3, :) = accelerations(3, :) - 9.81d0
@@ -121,15 +122,18 @@ contains
 
     end subroutine
 
-    subroutine calc_internal()
+    subroutine calc_surface()
+
+        
 
     end subroutine
 
-    subroutine calc_boundaries(positions,a)
+    subroutine calc_boundaries(positions, velocities, a)
+        
         real(8) :: a(:,:)
         real(8) :: normal(3,5), normal_k(3), d(5), d_k
         integer :: i,k
-        real(8), intent(in):: positions(:,:)
+        real(8), intent(in):: positions(:,:), velocities(:, :)
         real(8) :: proj(3,N), test(N)
 
         normal(:,1) = [1,0,0]
@@ -150,7 +154,7 @@ contains
             test = sum(proj,dim=1)+d_k
             test = (test - abs(test)) / 2
             do i=1,3
-                a(i,:) = a(i,:) + exp(-test)*normal(i,k)
+                a(i,:) = a(i,:) - 0.05 * exp(-test)*velocities(i, :)
             end do
         end do
 
