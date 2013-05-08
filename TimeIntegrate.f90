@@ -32,7 +32,7 @@ contains
     
         call calc_weights(positions(:, :))
         rho = sum(Wd, dim=2)  !Calculate density
-        call calc_pressure(acceleratioins)
+        call calc_pressure(accelerations)
         call calc_viscosity(velocities,accelerations)
         call calc_surface()
         call calc_boundaries(positions,velocities, accelerations)
