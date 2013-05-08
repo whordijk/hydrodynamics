@@ -8,7 +8,8 @@ module TimeIntegrate
     
     public update
 
-    real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
+    real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWd(3, N, N), del2Wd(N, N)
+    real(8) :: delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
     integer :: calc(2,N**2),pairs
 
 contains
@@ -57,6 +58,11 @@ contains
                 if (0 <= q .and. q <= h) then
                     Wd(i, j) = 315 * (h**2 - q**2)**3 / (64 * pi * h**9)
                     Wd(j, i) = Wd(i, j)
+                    delWd(:, i, j) = -945 / (32 * pi * h**9) * (h**2 - q**2)**2 * (positions(:, i) - positions(:, j))
+                    delWd(:, j, i) = -delWd(:, i, j)
+                    del2Wd(i, j) = -945 / (32 * pi * h**9) * (h**2 - q**2) &
+                        * (3 * (h**2 - q**2) - 4 * q**2)
+                    del2Wd(j, i) = del2Wd(i, j)
                     delWp(:, i, j) = -135 * (h - q)**2 / (pi * h**6) * (positions(:, i) - positions(:, j)) / q
                     delWp(:, j, i) = -delWp(:, i, j)
                     del2Wv(i, j) = 45 * (h - q) / (pi * h**6)
@@ -130,10 +136,10 @@ contains
         do i = 1, N
 
             do j = 1, 3
-                normal(j, i) = sum(delWp(j, i, :) / rho)
+                normal(j, i) = sum(delWd(j, i, :) / rho)
             end do            
             absnorm(i) = sqrt(sum(normal(:, i)**2))
-            K(i) = -sum(del2Wv(i, :) / rho) / absnorm(i)
+            K(i) = -sum(del2Wd(i, :) / rho) / absnorm(i)
             a(:, i) = a(:, i) + sigma * K(i) * normal(:, i) / absnorm(i)
 
         end do
