@@ -1,6 +1,5 @@
 module TimeIntegrate
 
-    use FindNeighbors
     use Parameters
 
     implicit none
@@ -19,7 +18,7 @@ contains
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
 
         velocities = velocities + accelerations * dt / 2
-        positions = positions + velocities * dt !+ accelerations**2 * dt**2 / 2
+        positions = positions + velocities * dt
         call update_accelerations(positions, velocities, accelerations)
         velocities = velocities + accelerations * dt / 2
 
@@ -100,8 +99,8 @@ contains
             if (i==j) then 
                 cycle
             end if
-            P(i, j) = -(pressure(i) / rho(i)**2 + pressure(j) / rho(j)**2)
-            P(j, i) = -(pressure(j) / rho(j)**2 + pressure(i) / rho(i)**2)
+            P(i, j) = -mass * (pressure(i) / rho(i)**2 + pressure(j) / rho(j)**2)
+            P(j, i) = -mass * (pressure(j) / rho(j)**2 + pressure(i) / rho(i)**2)
             a(:, i) = a(:, i) + P(i, j) * delWp(:, i, j)
             a(:, j) = a(:, j) + P(j, i) * delWp(:, j, i)
         end do
@@ -116,8 +115,8 @@ contains
         do  pair = 1, pairs
             i = calc(1,pair)
             j = calc(2,pair)
-            V(:, i, j) = mu * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
-            V(:, j, i) = mu * (velocities(:, i) - velocities(:, j)) / (rho(j) * rho(i))
+            V(:, i, j) = mu * mass * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
+            V(:, j, i) = mu * mass * (velocities(:, i) - velocities(:, j)) / (rho(j) * rho(i))
         end do
         do i = 1, N
             do j = 1, N
@@ -136,7 +135,7 @@ contains
         do i = 1, N
 
             do j = 1, 3
-                normal(j, i) = sum(delWd(j, i, :) / rho)
+                normal(j, i) = sum(mass * delWd(j, i, :) / rho)
             end do            
             absnorm(i) = sqrt(sum(normal(:, i)**2))
             K(i) = -sum(del2Wd(i, :) / rho) / absnorm(i)
@@ -154,12 +153,12 @@ contains
         real(8), intent(in):: positions(:,:), velocities(:, :)
         real(8) :: proj(3,N), test(N)
 
-        normal(:,1) = [1,0,0]
-        normal(:,2) = [-1,0,0]
-        normal(:,3) = [0,1,0]
-        normal(:,4) = [0,-1,0]
-        normal(:,5) = [0,0,1]
-        d=[init_size/2,init_size/2,init_size/2,init_size/2,0d0]
+        normal(:,1) = [1, 0, 0]
+        normal(:,2) = [-1, 0, 0]
+        normal(:,3) = [0, 1, 0]
+        normal(:,4) = [0, -1, 0]
+        normal(:,5) = [0, 0, 1]
+        d = [init_size/2, init_size/2, init_size/2, init_size/2, 0d0]
 
         
         do k =1,5
@@ -173,6 +172,7 @@ contains
             test = (test - abs(test)) / 2
             do i=1,3
                 a(i,:) = a(i,:) - f * exp(-test)*velocities(i, :)
+                !a(i, :) = a(i, :) + exp(-test) * normal(i, k)
             end do
         end do
 
