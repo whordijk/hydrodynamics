@@ -1,5 +1,5 @@
 FC = gfortran
-FFLAGS = -Wall -Wextra -O3
+FFLAGS = -Wall -Wextra -fbounds-check -O3
 LDLFLAGS =
 LIBS = -llapack
 

@@ -32,11 +32,10 @@ contains
     
         call calc_weights(positions(:, :))
         call calc_density()
-        call calc_pressure(acceleratioins)
+        call calc_pressure(accelerations)
         call calc_viscosity(velocities,accelerations)
-        call calc_surface()
+        call calc_surface(accelerations)
         call calc_boundaries(positions,velocities, accelerations)
-        !call calc_internal()
 
         accelerations(3, :) = accelerations(3, :) - 9.81d0
         
@@ -49,7 +48,7 @@ contains
         real(8) :: q 
         integer :: i, j
 
-        pairs=1
+        pairs= 0 
         calc = 0
 
         do i = 1, N
@@ -63,9 +62,9 @@ contains
                     del2Wv(i, j) = 45 * (h - q) / (pi * h**6)
                     del2Wv(j, i) = del2Wv(i, j)
 
+                    pairs = pairs+1
                     calc(1,pairs) = i
                     calc(2,pairs) = j
-                    pairs = pairs+1
                 else
                     Wd(i, j) = 0
                     Wd(j, i) = 0
@@ -122,9 +121,22 @@ contains
 
     end subroutine
 
-    subroutine calc_surface()
+    subroutine calc_surface(a)
 
-        
+        real(8) :: normal(3, N), absnorm(N), K(N)
+        real(8), intent(inout) :: a(:, :)
+        integer :: i, j
+
+        do i = 1, N
+
+            do j = 1, 3
+                normal(j, i) = sum(delWp(j, i, :) / rho)
+            end do            
+            absnorm(i) = sqrt(sum(normal(:, i)**2))
+            K(i) = -sum(del2Wv(i, :) / rho) / absnorm(i)
+            a(:, i) = a(:, i) + sigma * K(i) * normal(:, i) / absnorm(i)
+
+        end do
 
     end subroutine
 
@@ -154,7 +166,7 @@ contains
             test = sum(proj,dim=1)+d_k
             test = (test - abs(test)) / 2
             do i=1,3
-                a(i,:) = a(i,:) - 0.05 * exp(-test)*velocities(i, :)
+                a(i,:) = a(i,:) - f * exp(-test)*velocities(i, :)
             end do
         end do
 
