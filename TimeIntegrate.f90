@@ -20,7 +20,7 @@ contains
 
         do i = 1, 3
             velocities (i, :) = (1 - dt * gam / 2) * velocities(i, 3) + dt * accelerations(i, :)
-            positions(i, :) = positions(i, :) + velocities(i, :) * dt + accelerations(i, :)**2 * dt**2 / 2
+            positions(i, :) = positions(i, :) + velocities(i, :) * dt
         end do
         call update_accelerations(positions, velocities, accelerations)
         call calc_gamma()
