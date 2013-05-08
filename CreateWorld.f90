@@ -24,10 +24,11 @@ contains
         real(8), dimension(3) :: r1, r2, r3, r4
         real(8), dimension(3, N) :: x
         integer :: m, i, j, k, z, q(3)
-        real(8) :: L = (total_mass/set_density)**(1d0/3)
         real(8) :: a = (4/set_density)**(1d0/3)
 
-        m = nint(L/a)
+        print*, init_size/a
+
+        m = nint(init_size/a)
 
         r1 = [ 0d0, 0d0, 0d0 ]
         r2 = [ 0d0, 0.5d0, 0.5d0 ]
@@ -48,7 +49,11 @@ contains
             end do
         end do
 
+        print*,m, 4*3**2
         x(3,:) = x(3,:) + 15
+        x(2,:) = x(2,:) - init_size/2
+        x(1,:) = x(1,:) - init_size/2
+
 
     end subroutine
 
