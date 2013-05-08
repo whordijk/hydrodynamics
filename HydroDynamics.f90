@@ -14,7 +14,7 @@ program HydroDynamics
     call set_output()
     do i = 1, T
         call update(positions, velocities, accelerations)
-        if ( mod(i,20)==0) then
+        if (mod(i,20)==1) then
             call output_data(positions)
         end if
     end do
