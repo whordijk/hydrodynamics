@@ -134,8 +134,10 @@ contains
                 normal(j, i) = sum(mass * delWd(j, i, :) / rho)
             end do            
             absnorm(i) = sqrt(sum(normal(:, i)**2))
-            K(i) = -sum(del2Wd(i, :) / rho) / absnorm(i)
-            a(:, i) = a(:, i) + sigma * K(i) * normal(:, i) / absnorm(i)
+            if (absnorm(i) > 0.3) then
+                K(i) = -sum(del2Wd(i, :) / rho) / absnorm(i)
+                a(:, i) = a(:, i) + sigma * K(i) * normal(:, i) / absnorm(i)
+            end if
 
         end do
 
@@ -169,7 +171,6 @@ contains
             test = (test - abs(test)) / 2
             do i=1,3
                 a(i,:) = a(i,:) - f * exp(-test) * velocities(i, :) / sqrt(sum(velocities(i, :)**2))
-                !a(i, :) = a(i, :) + exp(-test) * normal(i, k)
             end do
         end do
 
