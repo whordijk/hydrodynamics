@@ -14,9 +14,10 @@ contains
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
 
         positions = 20
-        call initiate_positions(positions,1,N3_body,-1d0)
+        call read_positions(positions,1,4*N3_body**3)
+        !call initiate_positions(positions,1,N3_body,-1d0)
         wall_body = positions(3,4*N3_body**3)/2
-        call initiate_positions(positions, 4*N3_body**3+1, N3_drop, 100d0)
+        call initiate_positions(positions, 4*N3_body**3+1, N3_drop, 40d0)
         call initiate_velocities(velocities)
         accelerations = 0
     
@@ -56,6 +57,21 @@ contains
         x(2,start_index:z-1) = x(2,start_index:z-1) - xy_offset
         x(1,start_index:z-1) = x(1,start_index:z-1) - xy_offset
 
+
+    end subroutine
+
+    subroutine read_positions(x,start_index,N_in)
+        real(8) :: x(:,:)
+        integer :: start_index, N_in, i, j
+
+        open(unit = 25, file=in_file,action='read')
+        
+        do i=1,N_in
+            read (25, *) x(:,i)
+            print*, i
+        end do
+
+        close(25)
 
     end subroutine
 

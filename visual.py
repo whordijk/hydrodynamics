@@ -24,7 +24,7 @@ def simPoints(simData):
     return line
 
 
-fName = 'out_positions.txt'
+fName = 'out_positions.txt'#'big_sim.txt'
 N = 512
 p=loadData(fName,N)
 
