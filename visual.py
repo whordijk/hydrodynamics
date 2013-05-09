@@ -31,9 +31,9 @@ p=loadData(fName,N)
 fig = plt.figure()
 ax = fig.add_subplot(111,projection='3d')
 line, = ax.plot(p[0,:,0],p[1,:,0],p[2,:,0],"o")
-ax.set_xlim3d((-15,15))
-ax.set_ylim3d((-15,15))
-ax.set_zlim3d((-5,60))
+ax.set_xlim3d((-1,1))
+ax.set_ylim3d((-1,1))
+ax.set_zlim3d((-1,10))
 
 ani = animation.FuncAnimation(fig,simPoints, simData, blit=False,interval=10,
         repeat=True)

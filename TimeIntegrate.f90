@@ -8,7 +8,7 @@ module TimeIntegrate
     public update
 
     real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWd(3, N, N), del2Wd(N, N)
-    real(8) :: delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
+    real(8) :: delWp(3, N, N), del2Wv(N, N), V(3, N, N)
     integer :: calc(2, N**2), pairs
 
 contains
@@ -29,9 +29,10 @@ contains
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
 
         accelerations = 0
-    
+   
         call calc_weights(positions(:, :))
         rho = sum(Wd, dim=2)
+!        print *, rho
         call calc_pressure(accelerations)
         call calc_viscosity(velocities,accelerations)
         call calc_surface(accelerations)
@@ -54,7 +55,7 @@ contains
         do i = 1, N
             do j = i, N
                 q = sqrt(sum((positions(:, i) - positions(:, j))**2))
-                if (0 <= q .and. q <= h) then
+                if (q <= h) then
                     Wd(i, j) = 315 * (h**2 - q**2)**3 / (64 * pi * h**9)
                     delWd(:, i, j) = -945 * (h**2 - q**2)**2 * (positions(:, j) - positions(:, i)) / (32 * pi * h**9)
                     del2Wd(i, j) = -945 / (32 * pi * h**9) * (h**2 - q**2) &
@@ -83,11 +84,9 @@ contains
 
     end subroutine
 
-    subroutine calc_density()
-    end subroutine
-    
     subroutine calc_pressure(a)
-        real(8) :: a(:,:)
+
+        real(8) :: a(:,:), P
         integer :: i, j, pair
 
         pressure = c_s**2 * (rho - set_density)
@@ -97,10 +96,9 @@ contains
             if (i==j) then 
                 cycle
             end if
-            P(i, j) = -mass * (pressure(i) / rho(i)**2 + pressure(j) / rho(j)**2)
-            P(j, i) = -mass * (pressure(j) / rho(j)**2 + pressure(i) / rho(i)**2)
-            a(:, i) = a(:, i) + P(i, j) * delWp(:, i, j)
-            a(:, j) = a(:, j) + P(j, i) * delWp(:, j, i)
+            P = -mass * (pressure(i) / rho(i)**2 + pressure(j) / rho(j)**2)
+            a(:, i) = a(:, i) + P * delWp(:, i, j)
+            a(:, j) = a(:, j) + P * delWp(:, j, i)
         end do
 
     end subroutine
@@ -111,13 +109,12 @@ contains
         integer :: i, j, pair
         real(8) :: V(3)
 
-        V=0
         do  pair = 1, pairs
             i = calc(1,pair)
             j = calc(2,pair)
-            V= mu * mass*(velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
-            a(:, i) = a(:,i) + V*del2WV(i,j)
-            a(:, j) = a(:,j) - V*del2WV(j,i)
+            V = mu * mass * (velocities(:, j) - velocities(:, i)) / (rho(i) * rho(j))
+            a(:, i) = a(:,i) + V * del2WV(i,j)
+            a(:, j) = a(:,j) + V * del2WV(j,i)
         end do
 
     end subroutine
@@ -147,7 +144,7 @@ contains
         
         real(8) :: a(:,:)
         real(8) :: normal(3,5), normal_k(3), d(5), d_k
-        integer :: i,k
+        integer :: i,j,k
         real(8), intent(in):: positions(:,:), velocities(:, :)
         real(8) :: proj(3,N), test(N)
 
@@ -156,10 +153,9 @@ contains
         normal(:,3) = [0, 1, 0]
         normal(:,4) = [0, -1, 0]
         normal(:,5) = [0, 0, 1]
-        !d = [wall_body, wall_body, wall_body, wall_body, 0d0]
-        d = [init_size / 2, init_size / 2, init_size / 2, init_size / 2, 0d0]
+        !d = 4 * [init_size / 2, init_size / 2, init_size / 2, init_size / 2, 0d0]
+        d = [0.5d0, 0.5d0, 0.5d0, 0.5d0, 0d0]        
 
-        
         do k =1,5
             normal_k = normal(:,k)
             d_k = d(k)
@@ -168,9 +164,11 @@ contains
                 proj(i,:) = proj(i,:) + positions(i,:) * normal_k(i)
             end do
             test = sum(proj, dim=1) + d_k
-            test = (test - abs(test)) / 2
-            do i=1,3
-                a(i,:) = a(i,:) - f * exp(-test) * velocities(i, :) / sqrt(sum(velocities(i, :)**2))
+            do j = 1, N
+                if (test(j) < 0) then
+                    a(:, j) = a(:, j) - 1 * exp(-test(j)) * velocities(:, j) / sqrt(sum(velocities(:, j)**2))
+                    a(:, j) = a(:, j) + 10 * exp(-test(j)) * normal(:, k)
+                end if
             end do
         end do
 

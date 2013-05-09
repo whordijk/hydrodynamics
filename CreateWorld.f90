@@ -15,10 +15,11 @@ contains
 
         positions = 20
         !call read_positions(positions,1,4*N3_body**3)
-        call initiate_positions(positions,1,N3_body,-1d0)
+        call initiate_positions(positions,1,N3_body,5d0)
         wall_body = positions(3,4*N3_body**3)/2
         call initiate_positions(positions, 4*N3_body**3+1, N3_drop, 40d0)
-        call initiate_velocities(velocities)
+        !call initiate_velocities(velocities)
+        velocities = 0
         accelerations = 0
     
     end subroutine
@@ -72,47 +73,6 @@ contains
         end do
 
         close(25)
-
-    end subroutine
-
-
-    subroutine initiate_velocities(p)
-        real(8), intent(out) :: p(:,:) 
-        real(8), parameter :: pi = 4 * atan(1d0)
-        real(8), dimension(3) :: psum
-        real(8), dimension(3, N) :: u1, u2
-        real(8) :: beta
-        
-        p = 0d0
-        
-        call init_random_seed()
-        call random_number(u1)
-        call random_number(u2)
-
-        p = sqrt(-2d0 * log(u1)) * cos(2*pi*u2)
-        beta = sqrt((3 * (N - 1) * Temperature) / (sum(p**2)))
-        psum = sum(p, dim = 2)
-        p(1,:) = p(1,:) - 1d0 / N * psum(1)
-        p(2,:) = p(2,:) - 1d0 / N * psum(2)
-        p(3,:) = p(3,:) - 1d0 / N * psum(3)
-        p = beta * p 
-
-    end subroutine
-
-    subroutine init_random_seed()
-
-        integer :: i, n, clock
-        integer, dimension(:), allocatable :: seed
-
-        call random_seed(size = n)
-        allocate(seed(n))
-
-        call system_clock(count=clock)
-
-        seed = clock + 37 * (/ (i-1, i = 1, n) /)
-        call random_seed(put = seed)
-
-        deallocate(seed)
 
     end subroutine
 
