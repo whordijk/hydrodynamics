@@ -8,12 +8,12 @@ module Parameters
     integer, parameter :: T = 10000
     real(8), parameter :: mass = 1
     real(8), parameter :: total_mass = N * mass
-    real(8), parameter :: set_density = 1d0
+    real(8), parameter :: set_density = 1
     real(8), parameter :: Temperature = .1
     real(8), parameter :: dt = 1d-3
-    real(8), parameter :: c_s = 10, mu = 1, sigma = 0.1, f = 0.01
+    real(8), parameter :: c_s = 0.1, mu = 1, sigma = 0.1, f = 0.01
     real(8) :: init_size = (total_mass / (mass * set_density))**(1d0/3)
-    real(8), parameter :: h =(4 / set_density)**(1d0/3)
+    real(8), parameter :: h = 4 * (4 / set_density)**(1d0/3)
     real(8) :: wall_body
 
     character(len=*), parameter :: out_file="out_positions.txt"

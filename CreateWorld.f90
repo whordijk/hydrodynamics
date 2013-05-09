@@ -14,8 +14,8 @@ contains
         real(8), intent(inout) :: positions(:, :), velocities(:, :), accelerations(:, :)
 
         positions = 20
-        call read_positions(positions,1,4*N3_body**3)
-        !call initiate_positions(positions,1,N3_body,-1d0)
+        !call read_positions(positions,1,4*N3_body**3)
+        call initiate_positions(positions,1,N3_body,-1d0)
         wall_body = positions(3,4*N3_body**3)/2
         call initiate_positions(positions, 4*N3_body**3+1, N3_drop, 40d0)
         call initiate_velocities(velocities)

@@ -60,7 +60,6 @@ contains
                     del2Wd(i, j) = -945 / (32 * pi * h**9) * (h**2 - q**2) &
                         * (3 * h**2 - 7 * q**2)
                     delWp(:, i, j) = -45 * (h - q)**2 / (pi * h**6) * (positions(:, j) - positions(:, i)) / q
-                    delWp(:, j, i) = -delWp(:, i, j)
                     del2Wv(i, j) = 45 * (h - q) / (pi * h**6)
 
                     pairs = pairs + 1
@@ -169,8 +168,8 @@ contains
             test = sum(proj, dim=1) + d_k
             test = (test - abs(test)) / 2
             do i=1,3
-                !a(i,:) = a(i,:) - f * exp(-test) * velocities(i, :) / sqrt(sum(velocities(i, :)**2))
-                a(i, :) = a(i, :) + exp(-test) * normal(i, k)
+                a(i,:) = a(i,:) - f * exp(-test) * velocities(i, :) / sqrt(sum(velocities(i, :)**2))
+                !a(i, :) = a(i, :) + exp(-test) * normal(i, k)
             end do
         end do
 
