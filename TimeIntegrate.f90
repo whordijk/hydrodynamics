@@ -9,7 +9,7 @@ module TimeIntegrate
 
     real(8) :: rho(N), rho_0, pressure(N), Wd(N, N), delWd(3, N, N), del2Wd(N, N)
     real(8) :: delWp(3, N, N), del2Wv(N, N), P(N, N), V(3, N, N)
-    integer :: calc(2,N**2),pairs
+    integer :: calc(2, N**2), pairs
 
 contains
 
@@ -56,28 +56,28 @@ contains
                 q = sqrt(sum((positions(:, i) - positions(:, j))**2))
                 if (0 <= q .and. q <= h) then
                     Wd(i, j) = 315 * (h**2 - q**2)**3 / (64 * pi * h**9)
-                    Wd(j, i) = Wd(i, j)
-                    delWd(:, i, j) = -945 / (32 * pi * h**9) * (h**2 - q**2)**2 * (positions(:, i) - positions(:, j))
-                    delWd(:, j, i) = -delWd(:, i, j)
+                    delWd(:, i, j) = -945 * (h**2 - q**2)**2 * (positions(:, j) - positions(:, i)) / (32 * pi * h**9)
                     del2Wd(i, j) = -945 / (32 * pi * h**9) * (h**2 - q**2) &
                         * (3 * h**2 - 7 * q**2)
-                    del2Wd(j, i) = del2Wd(i, j)
-                    delWp(:, i, j) = -45 * (h - q)**2 / (pi * h**6) * (positions(:, i) - positions(:, j)) / q
+                    delWp(:, i, j) = -45 * (h - q)**2 / (pi * h**6) * (positions(:, j) - positions(:, i)) / q
                     delWp(:, j, i) = -delWp(:, i, j)
                     del2Wv(i, j) = 45 * (h - q) / (pi * h**6)
-                    del2Wv(j, i) = del2Wv(i, j)
 
-                    pairs = pairs+1
-                    calc(1,pairs) = i
-                    calc(2,pairs) = j
+                    pairs = pairs + 1
+                    calc(1, pairs) = i
+                    calc(2, pairs) = j
                 else
                     Wd(i, j) = 0
-                    Wd(j, i) = 0
+                    delWd(:, i, j) = 0
+                    del2Wd(i, j) = 0
                     delWp(:, i, j) = 0
-                    delWp(:, j, i) = 0
                     del2Wv(i, j) = 0
-                    del2Wv(j, i) = 0
                 end if
+                Wd(j, i) = Wd(i, j)
+                delWd(:, j, i) = -delWd(:, i, j)
+                del2Wd(j, i) = del2Wd(i, j)
+                delWp(:, j, i) = -delWp(:, i, j)
+                del2Wv(j, i) = del2Wv(i, j)
             end do
             delWp(:, i, i) = 0
         end do
@@ -156,21 +156,21 @@ contains
         normal(:,4) = [0, -1, 0]
         normal(:,5) = [0, 0, 1]
         !d = [wall_body, wall_body, wall_body, wall_body, 0d0]
-        d = 10*[init_size/2,init_size/2,init_size/2,init_size/2,0d0]
+        d = [init_size / 2, init_size / 2, init_size / 2, init_size / 2, 0d0]
 
         
         do k =1,5
             normal_k = normal(:,k)
             d_k = d(k)
             proj = 0
-            do i =1,3
-                proj(i,:) = proj(i,:) + positions(i,:)*normal_k(i)
+            do i =1, 3
+                proj(i,:) = proj(i,:) + positions(i,:) * normal_k(i)
             end do
-            test = sum(proj,dim=1)+d_k
+            test = sum(proj, dim=1) + d_k
             test = (test - abs(test)) / 2
             do i=1,3
-                a(i,:) = a(i,:) - f * exp(-test) * velocities(i, :) / sqrt(sum(velocities(i, :)**2))
-                !a(i, :) = a(i, :) + exp(-test) * normal(i, k)
+                !a(i,:) = a(i,:) - f * exp(-test) * velocities(i, :) / sqrt(sum(velocities(i, :)**2))
+                a(i, :) = a(i, :) + exp(-test) * normal(i, k)
             end do
         end do
 
