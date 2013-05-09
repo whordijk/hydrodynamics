@@ -16,10 +16,8 @@ contains
         positions = 20
         call initiate_positions(positions,1,N3_body,-1d0)
         wall_body = positions(3,4*N3_body**3)/2
-        call initiate_positions(positions,4*N3_body**3+1,N3_drop,100d0)
-        !call initiate_positions(positions)
+        call initiate_positions(positions, 4*N3_body**3+1, N3_drop, 100d0)
         call initiate_velocities(velocities)
-        !velocities = 0
         accelerations = 0
     
     end subroutine
