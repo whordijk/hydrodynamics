@@ -31,10 +31,10 @@ contains
         accelerations = 0
     
         call calc_weights(positions(:, :))
-        rho = sum(Wd, dim=2)  !Calculate density
+        rho = sum(Wd, dim=2)
         call calc_pressure(accelerations)
         call calc_viscosity(velocities,accelerations)
-        !call calc_surface(accelerations)
+        call calc_surface(accelerations)
         call calc_boundaries(positions,velocities, accelerations)
 
         accelerations(3, :) = accelerations(3, :) - 9.81d0
@@ -60,9 +60,9 @@ contains
                     delWd(:, i, j) = -945 / (32 * pi * h**9) * (h**2 - q**2)**2 * (positions(:, i) - positions(:, j))
                     delWd(:, j, i) = -delWd(:, i, j)
                     del2Wd(i, j) = -945 / (32 * pi * h**9) * (h**2 - q**2) &
-                        * (3 * (h**2 - q**2) - 4 * q**2)
+                        * (3 * h**2 - 7 * q**2)
                     del2Wd(j, i) = del2Wd(i, j)
-                    delWp(:, i, j) = -135 * (h - q)**2 / (pi * h**6) * (positions(:, i) - positions(:, j)) / q
+                    delWp(:, i, j) = -45 * (h - q)**2 / (pi * h**6) * (positions(:, i) - positions(:, j)) / q
                     delWp(:, j, i) = -delWp(:, i, j)
                     del2Wv(i, j) = 45 * (h - q) / (pi * h**6)
                     del2Wv(j, i) = del2Wv(i, j)
@@ -109,8 +109,8 @@ contains
     subroutine calc_viscosity(velocities,a)
         real(8) :: a(:,:)
         real(8), intent(in) :: velocities(:, :)
-        integer :: i, j,k, pair
-        real(8) :: V(3)!, N, N)
+        integer :: i, j, pair
+        real(8) :: V(3)
 
         V=0
         do  pair = 1, pairs
@@ -169,7 +169,7 @@ contains
             test = sum(proj,dim=1)+d_k
             test = (test - abs(test)) / 2
             do i=1,3
-                a(i,:) = a(i,:) - f * exp(-test)*velocities(i, :)
+                a(i,:) = a(i,:) - f * exp(-test) * velocities(i, :) / sqrt(sum(velocities(i, :)**2))
                 !a(i, :) = a(i, :) + exp(-test) * normal(i, k)
             end do
         end do
