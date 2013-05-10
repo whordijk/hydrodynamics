@@ -15,7 +15,7 @@ contains
 
         positions = 20
         !call read_positions(positions,1,4*N3_body**3)
-        call initiate_positions(positions,1,N3_body,5d0)
+        call initiate_positions(positions,1,N3_body,0d0)
         wall_body = positions(3,4*N3_body**3)/2
         call initiate_positions(positions, 4*N3_body**3+1, N3_drop, 40d0)
         !call initiate_velocities(velocities)
@@ -30,7 +30,7 @@ contains
         real(8), dimension(3) :: r1, r2, r3, r4
         real(8), dimension(:,:) :: x
         integer :: m, i, j, k, z, q(3)
-        real(8) :: a = (4/set_density)**(1d0/3)
+        real(8) :: a = (4 * mass / rho_0)**(1d0/3)
 
 
         r1 = [ 0d0, 0d0, 0d0 ]
